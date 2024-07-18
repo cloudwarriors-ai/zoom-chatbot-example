@@ -12,6 +12,7 @@ import base64
 dotenv.load_dotenv()
 
 
+
 zoomClientId = os.getenv("zoomClientId")
 zoomClientSecret = os.getenv("zoomClientSecret")
 
@@ -27,7 +28,9 @@ encode_auth_base64 = encode_auth.encode('utf-8')
 userid_cid_base64 = base64.b64encode(encode_auth_base64)
 
 userid_cid_base64 = userid_cid_base64.decode('ascii')
-print(userid_cid_base64)
+print("zoomClientId :"+zoomClientId)
+
+print("userid :"+userid_cid_base64)
 
 app = Flask(__name__)
 
@@ -66,14 +69,14 @@ def get_auth_token():
         "Content-Type": "application/json"
     }
     response = requests.post(url, headers=headers)
-    print(response.json()['access_token'])
+    print(response.json())
     return response.json()['access_token']
 
 auth_token = get_auth_token()
 
 #lets create a /command route this is a post request
 
-@app.route('/command', methods=['POST'])
+@app.route('/talkalot', methods=['POST'])
 def command():
     global auth_token
 
@@ -137,7 +140,7 @@ def test_message():
         "Authorization": f"Bearer {auth_token}",
         "Content-Type": "application/json"
     }
-
+    
     response = requests.post(url, json=data, headers=headers)
     #check to see if the response is 200
     print(response.status_code)
@@ -146,10 +149,10 @@ def test_message():
     
     if response.status_code != 200:
         auth_token = get_auth_token()
-        response = requests.post(url, json=data, headers=headers)
+        #response = requests.post(url, json=data, headers=headers)
 
     return response.json()
 
 
-app.run(host='0.0.0.0', port=3000, debug=True)
+app.run(host='0.0.0.0', port=4000, debug=True)
  
