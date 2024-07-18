@@ -6,6 +6,7 @@ import dotenv
 import os
 import logging
 import sys
+import base64
 # Set up logging
 
 
@@ -15,7 +16,7 @@ import sys
 
 dotenv.load_dotenv()
 
-logger.info("Starting the app...")
+
 
 zoomClientId = os.getenv("zoomClientId")
 zoomClientSecret = os.getenv("zoomClientSecret")
@@ -38,6 +39,7 @@ print("userid :"+userid_cid_base64)
 
 app = Flask(__name__)
 
+app.logger.info("Starting the app...")
 
 auth_token = None
 # create a data object to send to the zoom api
@@ -67,14 +69,14 @@ def create_data_object(to_jid, user_jid, robot_jid, account_id, message):
 #write an authorization function to get the auth token
 
 def get_auth_token():
-    app.logger("getting auth token...")
+    app.logger.info("getting auth token...")
     url = "https://zoom.us/oauth/token?grant_type=client_credentials"
     headers = {
         "Authorization": f"Basic {userid_cid_base64}",
         "Content-Type": "application/json"
     }
     response = requests.post(url, headers=headers)
-    app.logger(response.json())
+    app.logger.info(response.json())
     return response.json()['access_token']
 
 auth_token = get_auth_token()
@@ -86,8 +88,8 @@ def command():
     global auth_token
 
     #print request data route
-    app.logger("in command route...")
-    app.logger(request.json) 
+    app.logger.info("in command route...")
+    app.logger.info(request.json) 
     
     robotJid = request.json['payload']['robotJid']
     toJid = request.json['payload']['toJid']
@@ -100,7 +102,7 @@ def command():
     data = create_data_object(toJid, userJid, robotJid, accountId, "I like mooney")
     
     
-    app.logger("command received...")
+    app.logger.info("command received...")
     url = "https://api.zoom.us/v2/im/chat/messages"
     headers = {
         "Authorization": f"Bearer {auth_token}",
@@ -110,7 +112,7 @@ def command():
     response = requests.post(url, json=data, headers=headers)
     #check to see if the response is 200
     #print(response.status_code)
-    app.logger(response.json())
+    app.logger.info(response.json())
 
     #userid_cid_base64
     #if the response is not 200 then get a new auth token
