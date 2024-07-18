@@ -4,14 +4,18 @@ import json
 import requests
 import dotenv
 import os
-import base64
+import logging
+import sys
+# Set up logging
+
+
 
 #load the environment variables from .env file
 
 
 dotenv.load_dotenv()
 
-
+logger.info("Starting the app...")
 
 zoomClientId = os.getenv("zoomClientId")
 zoomClientSecret = os.getenv("zoomClientSecret")
@@ -28,11 +32,12 @@ encode_auth_base64 = encode_auth.encode('utf-8')
 userid_cid_base64 = base64.b64encode(encode_auth_base64)
 
 userid_cid_base64 = userid_cid_base64.decode('ascii')
-print("zoomClientId :"+zoomClientId)
+("zoomClientId :"+zoomClientId)
 
 print("userid :"+userid_cid_base64)
 
 app = Flask(__name__)
+
 
 auth_token = None
 # create a data object to send to the zoom api
@@ -62,14 +67,14 @@ def create_data_object(to_jid, user_jid, robot_jid, account_id, message):
 #write an authorization function to get the auth token
 
 def get_auth_token():
-    print("getting auth token...")
+    app.logger("getting auth token...")
     url = "https://zoom.us/oauth/token?grant_type=client_credentials"
     headers = {
         "Authorization": f"Basic {userid_cid_base64}",
         "Content-Type": "application/json"
     }
     response = requests.post(url, headers=headers)
-    print(response.json())
+    app.logger(response.json())
     return response.json()['access_token']
 
 auth_token = get_auth_token()
@@ -81,8 +86,8 @@ def command():
     global auth_token
 
     #print request data route
-    print("in command route...")
-    print(request.json) 
+    app.logger("in command route...")
+    app.logger(request.json) 
     
     robotJid = request.json['payload']['robotJid']
     toJid = request.json['payload']['toJid']
@@ -95,7 +100,7 @@ def command():
     data = create_data_object(toJid, userJid, robotJid, accountId, "I like mooney")
     
     
-    print("command received...")
+    app.logger("command received...")
     url = "https://api.zoom.us/v2/im/chat/messages"
     headers = {
         "Authorization": f"Bearer {auth_token}",
@@ -105,7 +110,7 @@ def command():
     response = requests.post(url, json=data, headers=headers)
     #check to see if the response is 200
     #print(response.status_code)
-    print(response.json())
+    app.logger(response.json())
 
     #userid_cid_base64
     #if the response is not 200 then get a new auth token
@@ -154,4 +159,9 @@ def test_message():
 
 
 #app.run(host='0.0.0.0', port=8000, debug=True)
+
+if __name__ == "__main__":
+    # Set up logging
+    logging.basicConfig(level=logging.INFO)
+    app.run()
  
